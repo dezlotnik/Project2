@@ -3,6 +3,29 @@
 <robot name="my_robot" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
   <xacro:include filename="$(find my_robot)/urdf/my_robot.gazebo" />
+
+  <xacro:property name="chassis_width" value="0.35" />
+  <xacro:property name="chassis_length" value="0.45" />
+  <xacro:property name="chassis_height" value="0.1" />
+  <xacro:property name="chassis_mass" value="5" />
+
+  <xacro:property name="chassis_ixx" value="${chassis_mass/12.0 * (chassis_height*chassis_height + chassis_width*chassis_width)}" />
+  <xacro:property name="chassis_iyy" value="${chassis_mass/12.0 * (chassis_height*chassis_height + chassis_length*chassis_length)}" />
+  <xacro:property name="chassis_izz" value="${chassis_mass/12.0 * (chassis_width*chassis_width + chassis_length*chassis_length)}" />
+
+  <xacro:property name="wheel_length" value="0.05" />
+  <xacro:property name="wheel_radius" value="0.1" />
+  <xacro:property name="wheel_mass" value="1" />
+  <xacro:property name="wheel_inertia" value="0.1" />
+  <!-- <xacro:property name="wheel_x_offset" value="${base_x_offset + mower_length/2.0}" />
+  <xacro:property name="wheel_y_offset" value="${mower_width/2.0 - wheel_length/2.0}" /> -->
+
+  <xacro:property name="wheel_kp" value="100.0" />
+  <xacro:property name="wheel_kd" value="1.0" />
+  <xacro:property name="wheel_mu1" value="1000" />
+  <xacro:property name="wheel_mu2" value="1000" />
+  <xacro:property name="wheel_slip1" value="0" />
+  <xacro:property name="wheel_slip2" value="0" />
   
   <link name="robot_footprint"></link>
 
@@ -16,124 +39,208 @@
     <pose>0 0 0.1 0 0 0</pose>
 
     <inertial>
-      <mass value="15.0"/>
+      <mass value="${chassis_mass}"/>
       <origin xyz="0.0 0 0" rpy=" 0 0 0"/>
       <inertia
-          ixx="0.1" ixy="0" ixz="0"
-          iyy="0.1" iyz="0"
-          izz="0.1"
+          ixx="${chassis_ixx}" ixy="0" ixz="0"
+          iyy="${chassis_iyy}" iyz="0"
+          izz="${chassis_izz}"
       />
     </inertial>
 
     <collision name='collision'>
       <origin xyz="0 0 0" rpy=" 0 0 0"/> 
       <geometry>
-        <box size=".4 .2 .1"/>
+        <box size="${chassis_length} ${chassis_width} ${chassis_height}"/>
       </geometry>
     </collision>
 
     <visual name='chassis_visual'>
       <origin xyz="0 0 0" rpy=" 0 0 0"/>
       <geometry>
-        <box size=".4 .2 .1"/>
-      </geometry>
-    </visual>
-
-
-    <collision name='back_caster_collision'>
-      <origin xyz="-0.15 0 -0.05" rpy=" 0 0 0"/>
-      <geometry>
-        <sphere radius="0.0499"/>
-      </geometry>
-    </collision>
-
-    <visual name='back_caster_visual'>
-      <origin xyz="-0.15 0 -0.05" rpy=" 0 0 0"/>
-      <geometry>
-        <sphere radius="0.05"/>
-      </geometry>
-    </visual>
-
-    <collision name='front_caster_collision'>
-      <origin xyz="0.15 0 -0.05" rpy=" 0 0 0"/>
-      <geometry>
-        <sphere radius="0.0499"/>
-      </geometry>
-    </collision>
-
-    <visual name='front_caster_visual'>
-      <origin xyz="0.15 0 -0.05" rpy=" 0 0 0"/>
-      <geometry>
-        <sphere radius="0.05"/>
+        <box size="${chassis_length} ${chassis_width} ${chassis_height}"/>
       </geometry>
     </visual>
 
   </link>
 
-  <link name="left_wheel">
+  <link name="left_front_wheel">
     <inertial>
-      <mass value="5.0"/>
+      <mass value="${wheel_mass}"/>
       <origin xyz="0.0 0 0" rpy=" 0 1.5707 1.5707"/>
       <inertia
-          ixx="0.1" ixy="0" ixz="0"
-          iyy="0.1" iyz="0"
-          izz="0.1"
+          ixx="${wheel_inertia}" ixy="0" ixz="0"
+          iyy="${wheel_inertia}" iyz="0"
+          izz="${wheel_inertia}"
       />
     </inertial>
 
     <collision name='collision'>
       <origin xyz="0 0 0" rpy=" 0 1.5707 1.5707"/> 
       <geometry>
-        <cylinder radius="0.1" length = "0.05"/>
+        <cylinder radius="${wheel_radius}" length = "${wheel_length}"/>
       </geometry>
+      <surface>
+        <friction>
+          <fdir1>1 0 0</fdir1>
+          <kp>${wheel_kp}</kp> <!-- kp and kd for rubber -->
+          <kd>${wheel_kd}</kd>
+          <mu>${wheel_mu1}</mu>
+          <mu2>${wheel_mu2}</mu2>
+          <slip1>${wheel_slip1}</slip1>
+          <slip2>${wheel_slip2}</slip2>
+        </friction>
+      </surface>
     </collision>
 
-    <visual name='left_wheel_visual'>
+    <visual name='left_front_wheel_visual'>
       <origin xyz="0 0 0" rpy=" 0 1.5707 1.5707"/>
       <geometry>
-        <cylinder radius="0.1" length = "0.05"/>
+        <cylinder radius="${wheel_radius}" length = "${wheel_length}"/>
       </geometry>
     </visual>
   </link>
 
-  <link name="right_wheel">
+  <link name="left_rear_wheel">
     <inertial>
-      <mass value="5.0"/>
+      <mass value="${wheel_mass}"/>
       <origin xyz="0.0 0 0" rpy=" 0 1.5707 1.5707"/>
       <inertia
-          ixx="0.1" ixy="0" ixz="0"
-          iyy="0.1" iyz="0"
-          izz="0.1"
+          ixx="${wheel_inertia}" ixy="0" ixz="0"
+          iyy="${wheel_inertia}" iyz="0"
+          izz="${wheel_inertia}"
+      />
+    </inertial>
+    <collision name='collision'>
+      <origin xyz="0 0 0" rpy=" 0 1.5707 1.5707"/> 
+      <geometry>
+        <cylinder radius="${wheel_radius}" length = "${wheel_length}"/>
+      </geometry>
+      <surface>
+        <friction>
+          <fdir1>1 0 0</fdir1>
+          <kp>${wheel_kp}</kp> <!-- kp and kd for rubber -->
+          <kd>${wheel_kd}</kd>
+          <mu>${wheel_mu1}</mu>
+          <mu2>${wheel_mu2}</mu2>
+          <slip1>${wheel_slip1}</slip1>
+          <slip2>${wheel_slip2}</slip2>
+        </friction>
+      </surface>
+    </collision>
+
+    <visual name='left_rear_wheel_visual'>
+      <origin xyz="0 0 0" rpy=" 0 1.5707 1.5707"/>
+      <geometry>
+        <cylinder radius="${wheel_radius}" length = "${wheel_length}"/>
+      </geometry>
+    </visual>
+  </link>
+
+  <link name="right_front_wheel">
+    <inertial>
+      <mass value="${wheel_mass}"/>
+      <origin xyz="0.0 0 0" rpy=" 0 1.5707 1.5707"/>
+      <inertia
+          ixx="${wheel_inertia}" ixy="0" ixz="0"
+          iyy="${wheel_inertia}" iyz="0"
+          izz="${wheel_inertia}"
       />
     </inertial>
 
     <collision name='collision'>
       <origin xyz="0 0 0" rpy=" 0 1.5707 1.5707"/> 
       <geometry>
-        <cylinder radius="0.1" length = "0.05"/>
+        <cylinder radius="${wheel_radius}" length = "${wheel_length}"/>
       </geometry>
+      <surface>
+        <friction>
+          <fdir1>1 0 0</fdir1>
+          <kp>${wheel_kp}</kp> <!-- kp and kd for rubber -->
+          <kd>${wheel_kd}</kd>
+          <mu>${wheel_mu1}</mu>
+          <mu2>${wheel_mu2}</mu2>
+          <slip1>${wheel_slip1}</slip1>
+          <slip2>${wheel_slip2}</slip2>
+        </friction>
+      </surface>
     </collision>
 
-    <visual name='left_wheel_visual'>
+    <visual name='right_front_wheel_visual'>
       <origin xyz="0 0 0" rpy=" 0 1.5707 1.5707"/>
       <geometry>
-        <cylinder radius="0.1" length = "0.05"/>
+        <cylinder radius="${wheel_radius}" length = "${wheel_length}"/>
       </geometry>
     </visual>
   </link>
 
-  <joint type="continuous" name="left_wheel_hinge">
-    <origin xyz="0 0.15 0" rpy="0 0 0"/>
-    <child link="left_wheel"/>
+  <link name="right_rear_wheel">
+    <inertial>
+      <mass value="${wheel_mass}"/>
+      <origin xyz="0.0 0 0" rpy=" 0 1.5707 1.5707"/>
+      <inertia
+          ixx="${wheel_inertia}" ixy="0" ixz="0"
+          iyy="${wheel_inertia}" iyz="0"
+          izz="${wheel_inertia}"
+      />
+    </inertial>
+
+    <collision name='collision'>
+      <origin xyz="0 0 0" rpy=" 0 1.5707 1.5707"/> 
+      <geometry>
+        <cylinder radius="${wheel_radius}" length = "${wheel_length}"/>
+      </geometry>
+      <surface>
+        <friction>
+          <fdir1>1 0 0</fdir1>
+          <kp>${wheel_kp}</kp> <!-- kp and kd for rubber -->
+          <kd>${wheel_kd}</kd>
+          <mu>${wheel_mu1}</mu>
+          <mu2>${wheel_mu2}</mu2>
+          <slip1>${wheel_slip1}</slip1>
+          <slip2>${wheel_slip2}</slip2>
+        </friction>
+      </surface>
+    </collision>
+
+    <visual name='right_rear_wheel_visual'>
+      <origin xyz="0 0 0" rpy=" 0 1.5707 1.5707"/>
+      <geometry>
+        <cylinder radius="${wheel_radius}" length = "${wheel_length}"/>
+      </geometry>
+    </visual>
+  </link>
+
+  <joint type="continuous" name="left_front_wheel_hinge">
+    <origin xyz="0.11 ${chassis_width/2+wheel_length/2} 0" rpy="0 0 0"/>
+    <child link="left_front_wheel"/>
     <parent link="chassis"/>
     <axis xyz="0 1 0" rpy="0 0 0"/>
     <limit effort="10000" velocity="1000"/>
     <dynamics damping="1.0" friction="1.0"/>
   </joint>
 
-  <joint type="continuous" name="right_wheel_hinge">
-    <origin xyz="0 -0.15 0" rpy="0 0 0"/>
-    <child link="right_wheel"/>
+  <joint type="continuous" name="right_front_wheel_hinge">
+    <origin xyz="0.11 -${chassis_width/2+wheel_length/2} 0" rpy="0 0 0"/>
+    <child link="right_front_wheel"/>
+    <parent link="chassis"/>
+    <axis xyz="0 1 0" rpy="0 0 0"/>
+    <limit effort="10000" velocity="1000"/>
+    <dynamics damping="1.0" friction="1.0"/>
+  </joint>
+
+  <joint type="continuous" name="left_rear_wheel_hinge">
+    <origin xyz="-0.11 ${chassis_width/2+wheel_length/2} 0" rpy="0 0 0"/>
+    <child link="left_rear_wheel"/>
+    <parent link="chassis"/>
+    <axis xyz="0 1 0" rpy="0 0 0"/>
+    <limit effort="10000" velocity="1000"/>
+    <dynamics damping="1.0" friction="1.0"/>
+  </joint>
+
+  <joint type="continuous" name="right_rear_wheel_hinge">
+    <origin xyz="-0.11 -${chassis_width/2+wheel_length/2} 0" rpy="0 0 0"/>
+    <child link="right_rear_wheel"/>
     <parent link="chassis"/>
     <axis xyz="0 1 0" rpy="0 0 0"/>
     <limit effort="10000" velocity="1000"/>
@@ -167,7 +274,7 @@
   </link>
 
   <joint type="fixed" name="camera_joint">
-    <origin xyz="0.2 0 0" rpy="0 0 0"/>
+    <origin xyz="0.225 0 0" rpy="0 0 0"/>
     <child link="camera"/>
     <parent link="chassis"/>
     <axis xyz="0 1 0" rpy="0 0 0"/>
@@ -201,7 +308,7 @@
   </link>
 
   <joint type="fixed" name="hokuyo_joint">
-    <origin xyz="0.15 0 0.1" rpy="0 0 0"/>
+    <origin xyz="0.0 0 0.1" rpy="0 0 0"/>
     <child link="hokuyo"/>
     <parent link="chassis"/>
     <axis xyz="0 1 0" rpy="0 0 0"/>
