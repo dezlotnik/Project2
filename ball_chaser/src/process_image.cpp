@@ -46,11 +46,11 @@ void process_image_callback(const sensor_msgs::Image img)
 
     if (ball_found) {
         if (n_center >= n_left && n_center >= n_right) {
-            drive_robot(0.5,0.0);
+            drive_robot(0.2,0.0);
         } else if (n_left >= n_right ) {
-            drive_robot(0.0,0.5);
+            drive_robot(0.0,0.15);
         } else {
-            drive_robot(0.0,-0.5);
+            drive_robot(0.0,-0.15);
         }
     } else {
         drive_robot(0.0,0.0);
