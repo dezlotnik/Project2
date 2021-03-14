@@ -22,8 +22,8 @@ void ProcessImage::Callback(const sensor_msgs::Image img) {
     int n_center = 0;
     int n_right = 0;
     bool ball_found = false;
-    for (int i = 0; i < size; i++) {
-        if (img.data[i] == white_pixel) {
+    for (int i = 0; i < size; i+=3) {
+        if (img.data[i] == white_pixel && img.data[i+1] == white_pixel && img.data[i+2] == white_pixel) {
             ball_found = true;
             if (i % row_size <= row_size/3) {
                 n_left++;
