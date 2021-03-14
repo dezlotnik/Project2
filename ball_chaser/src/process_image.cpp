@@ -2,23 +2,14 @@
 #include "ball_chaser/DriveToTarget.h"
 #include <sensor_msgs/Image.h>
 
-// Define a global client that can request services
-ros::ServiceClient client;
+#include "process_image.h"
 
-// This function calls the command_robot service to drive the robot in the specified direction
-void drive_robot(float lin_x, float ang_z)
-{
-    // TODO: Request a service and pass the velocities to it to drive the robot
-    ball_chaser::DriveToTarget srv;
-    srv.request.linear_x = lin_x;
-    srv.request.angular_z = ang_z;
-    client.call(srv);
+ProcessImage::ProcessImage(ros::NodeHandle &n) : n_(n) {
+    client_ = n_.serviceClient<ball_chaser::DriveToTarget>("/ball_chaser/command_robot");
+    sub_ = n_.subscribe("/camera/rgb/image_raw", 10, &ProcessImage::Callback, this);
 }
 
-// This callback function continuously executes and reads the image data
-void process_image_callback(const sensor_msgs::Image img)
-{
-
+void ProcessImage::Callback(const sensor_msgs::Image img) {
     int white_pixel = 255;
 
     // TODO: Loop through each pixel in the image and check if there's a bright white one
@@ -46,17 +37,25 @@ void process_image_callback(const sensor_msgs::Image img)
 
     if (ball_found) {
         if (n_center >= n_left && n_center >= n_right) {
-            drive_robot(0.25,0.0);
+            DriveRobot(0.25,0.0);
         } else if (n_left >= n_right ) {
-            drive_robot(0.0,0.25);
+            DriveRobot(0.0,0.25);
         } else {
-            drive_robot(0.0,-0.25);
+            DriveRobot(0.0,-0.25);
         }
     } else {
-        drive_robot(0.0,0.0);
+        DriveRobot(0.0,0.0);
     }
-
 }
+
+void ProcessImage::DriveRobot(float lin_x, float ang_z) {
+    // TODO: Request a service and pass the velocities to it to drive the robot
+    ball_chaser::DriveToTarget srv;
+    srv.request.linear_x = lin_x;
+    srv.request.angular_z = ang_z;
+    client_.call(srv);
+}
+
 
 int main(int argc, char** argv)
 {
@@ -64,11 +63,7 @@ int main(int argc, char** argv)
     ros::init(argc, argv, "process_image");
     ros::NodeHandle n;
 
-    // Define a client service capable of requesting services from command_robot
-    client = n.serviceClient<ball_chaser::DriveToTarget>("/ball_chaser/command_robot");
-
-    // Subscribe to /camera/rgb/image_raw topic to read the image data inside the process_image_callback function
-    ros::Subscriber sub1 = n.subscribe("/camera/rgb/image_raw", 10, process_image_callback);
+    ProcessImage process_image(n);
 
     // Handle ROS communication events
     ros::spin();
